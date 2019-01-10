@@ -1,3 +1,11 @@
+######################################################################################
+######################################################################################
+## This script produces a matplotlib version of a regulation NCAA basketball court. ##
+## Each unit in x and y is equivalent to one foot (12 in) and all parts of the      ##
+## model are drawn to scale.                                                        ##
+######################################################################################
+######################################################################################
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
