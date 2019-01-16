@@ -523,4 +523,5 @@ ax.fill(crease_r_outline['x'], crease_r_outline['y'], '#c8102e')
 # Add goal lines
 ax.fill(goal_lines['x'], goal_lines['y'], '#c8102e')
 
+
 plt.show()

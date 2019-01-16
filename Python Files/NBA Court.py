@@ -500,8 +500,14 @@ ax.xaxis.set_visible(False)
 ax.yaxis.set_visible(False)
 
 # Add court coloring
-ax.fill(court_border['x'], court_border['y'], '#000000')
+ax.set_facecolor('#000000')
 ax.fill(court['x'], court['y'], '#d2ab6f')
+
+# Add NBA logo to substitution area
+img = 'League Logos/nba.png'
+img = plt.imread(img)
+
+ax.imshow(img, extent = [-2, 2, 25 + (2/12), 29 + (2/12)])
 
 # Add baselines, sidelines, substitution area, and coaches' box markings to court
 ax.fill(baselines['x'], baselines['y'], '#ffffff')

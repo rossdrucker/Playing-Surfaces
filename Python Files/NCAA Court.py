@@ -304,7 +304,7 @@ ax.xaxis.set_visible(False)
 ax.yaxis.set_visible(False)
 
 # Add court coloring
-ax.fill(court['x'], court['y'], '#d2ab6f')
+ax.set_facecolor('#d2ab6f')
 
 # Add baselines, sidelines, substitution area, and coaches' box markings to court
 ax.fill(baselines['x'], baselines['y'], '#000000')
@@ -314,6 +314,11 @@ ax.fill(coaches_box['x'], coaches_box['y'], '#000000')
 
 # Add time line
 ax.fill(timeline['x'], timeline['y'], '#000000')
+
+# Add NCAA logo at center court
+img = 'League Logos/ncaa.png'
+img = plt.imread(img)
+ax.imshow(img, extent = [-6, 6, -6, 6])
 
 # Add center circle
 ax.fill(center_circle['x'], center_circle['y'], '#000000')
