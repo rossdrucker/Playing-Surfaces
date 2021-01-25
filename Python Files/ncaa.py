@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import playing_surface_helper as helper
 import coordinate_transforms as transform
 
-def get_center_circle():
+def get_center_circle(full_court = True, rotate = False, rotation_dir = 'ccw'):
     """
     Generate the dataframe for the points that comprise the center circle as
     specified in Rule 1, Section 4, Article 1 of the NCAA rule book
@@ -26,8 +26,8 @@ def get_center_circle():
     # future fill issues.
     center_circle = helper.create_circle(
         d = 12,
-        start = -1/2,
-        end = 1/2
+        start = 1/2,
+        end = 3/2
     ).append(
         pd.DataFrame({
             'x': [0],
@@ -36,8 +36,8 @@ def get_center_circle():
     ).append(
         helper.create_circle(
             d = 12 - (4/12),
-            start = 1/2,
-            end = -1/2
+            start = 3/2,
+            end = 1/2
         )
     ).append(
         pd.DataFrame({
@@ -46,14 +46,22 @@ def get_center_circle():
         })
     )
     
-    # Reflect the x coordinates over the y axis    
-    center_circle = center_circle.append(
-        transform.reflect(center_circle, over_y = True)
-    )
+    if full_court:
+        # Reflect the x coordinates over the y axis    
+        center_circle = center_circle.append(
+            transform.reflect(center_circle, over_y = True)
+        )
+        
+    # Rotate the coordinates if necessary
+    if rotate:
+        center_circle = transform.rotate(
+            center_circle,
+            rotation_dir
+        )
             
     return center_circle
 
-def get_division_line():
+def get_division_line(full_court = True, rotate = False, rotation_dir = 'ccw'):
     """
     Generate the dataframe for the points that comprise the bounding box of
     the division line as specified in Rule 1, Section 5, Article 1 of the NCAA
@@ -68,8 +76,8 @@ def get_division_line():
     division_line = pd.DataFrame({
         'x': [
             -1/12,
-            1/12,
-            1/12,
+            0,
+            0,
             -1/12,
             -1/12
         ],
@@ -82,84 +90,77 @@ def get_division_line():
             25
         ]
     })
+    if full_court:
+        # Reflect the x coordinates over the y axis
+        division_line = division_line.append(
+            transform.reflect(division_line, over_y = True)
+        )
+    
+    # Rotate the coordinates if necessary
+    if rotate:
+        division_line = transform.rotate(
+            division_line,
+            rotation_dir
+        )
     
     return division_line
 
-def get_endlines():
+def get_endlines_sidelines(full_court = True, rotate = False,
+                           rotation_dir = 'ccw'):
     """
     Generate the dataframe for the points that comprise the bounding box of the
-    end lines as specified in Rule 1, Section 3, Article 2 of the NCAA rule
-    book
+    end lines and sidelines as specified in Rule 1, Section 3, Article 2 of
+    the NCAA rule book
 
     Returns
     -------
-    endlines: a pandas dataframe of the end lines
+    endline_sideline: a pandas dataframe of the end lines and side lines
     """
-    # The baseline must be 8" thick, and the edge closest to the court must be
-    # 47' from the center of the division line
-    endline = pd.DataFrame({
+    endline_sideline = pd.DataFrame({
         'x': [
-            47 + (8/12),
-            47,
-            47,
-            47 + (8/12),
-            47 + (8/12)
+            0,
+            -47,
+            -47,
+            0,
+            0,
+            -47 - (2/12),
+            -47 - (2/12),
+            0,
+            0
+            
         ],
         
         'y': [
-            -25 - (8/12),
-            -25 - (8/12),
-            25 + (8/12),
-            25 + (8/12),
-            -25 - (8/12)
+            -25,
+            -25,
+            25,
+            25,
+            25 + (2/12),
+            25 + (2/12),
+            -25 - (2/12),
+            -25 - (2/12),
+            -25
         ]
     })
     
-    # Reflect the x coordinates over the y axis
-    endlines = endline.append(
-        transform.reflect(endline, over_y = True)
-    )
+    if full_court:
+        # Reflect the x coordinates over the y axis
+        endline_sideline = endline_sideline.append(
+            transform.reflect(endline_sideline, over_y = True)
+        )
     
-    return endlines
-
-def get_sidelines():
-    """
-    Generate the dataframe for the points that comprise the bounding box of the
-    sidelines as specified in Rule 1, Section 3, Article 1 of the NCAA rule
-    book
-
-    Returns
-    -------
-    sidelines: a pandas dataframe of the sidelines
-    """
-    # The sideline must be 8" thick, and the edge closest to the court must be
-    # 25' from the center of the middle of the court
-    sideline = pd.DataFrame({
-        'x': [
-            -47 - (8/12),
-            47 + (8/12),
-            47 + (8/12),
-            -47 - (8/12),
-            -47 - (8/12)
-        ],
-        
-        'y': [
-            -25 - (8/12),
-            -25 - (8/12),
-            -25,
-            -25,
-            -25 - (8/12)
-        ]
-    })
+    # Rotate the coordinates if necessary
+    if rotate:
+        endline_sideline = transform.rotate(
+            endline_sideline,
+            rotation_dir
+        )
     
-    # Reflect the y coordinates over the x axis
-    sidelines = sideline.append(
-        transform.reflect(sideline, over_x = True)
-    )
+    return endline_sideline
     
-    return sidelines
-
-def get_coaching_boxes():
+    
+def get_coaching_boxes(full_court = True, rotate = False,
+                       rotation_dir = 'ccw'):
     """
     Generate the dataframe for the points that comprise the bounding box of the
     coaching boxes as specified in Rule 1, Section 9, Articles 1 and 2 of the
@@ -182,22 +183,30 @@ def get_coaching_boxes():
         ],
         
         'y': [
-            25 + (8/12),
-            27 + (8/12),
-            27 + (8/12),
-            25 + (8/12),
-            25 + (8/12)
+            25,
+            27,
+            27,
+            25,
+            25
         ]
     })
     
-    # Reflect the x coordinates over the y axis
-    coaching_boxes = coaching_box.append(
-        transform.reflect(coaching_box, over_y = True)
-    )
+    if full_court:
+        # Reflect the x coordinates over the y axis
+        coaching_box = coaching_box.append(
+            transform.reflect(coaching_box, over_y = True)
+        )
     
-    return coaching_boxes
+    # Rotate the coordinates if necessary
+    if rotate:
+        coaching_box = transform.rotate(
+            coaching_box,
+            rotation_dir
+        )
+    
+    return coaching_box
 
-def get_bench_areas():
+def get_bench_areas(full_court = True, rotate = False, rotation_dir = 'ccw'):
     """
     Generate the dataframe for the points that comprise the team bench areas
     as specified on the court diagram in the NCAA rule book
@@ -208,18 +217,30 @@ def get_bench_areas():
     """
     # The bench area is 28 feet from the interior of the endline, is 2" wide,
     # and extends 3' on each side of the sideline
-    bench_areas = pd.DataFrame({
+    bench_area = pd.DataFrame({
         'x': [
             -19 - (2/12), -19 - (2/12), -19, -19, -19 - (2/12),
-            19 + (2/12),  19 + (2/12),  19,  19,  19 + (2/12)
         ],
         
-        'y': [22, 28, 28, 22, 22, 22, 28, 28, 22, 22]
+        'y': [22, 28, 28, 22, 22]
     })
     
-    return bench_areas
+    if full_court:
+        # Reflect the x coordinates over the y axis
+        bench_area = bench_area.append(
+            transform.reflect(bench_area, over_y = True)
+        )
+    # Rotate the coordinates if necessary
+    if rotate:
+        bench_area = transform.rotate(
+            bench_area,
+            rotation_dir
+        )
+    
+    return bench_area
 
-def get_free_throw_lanes():
+def get_free_throw_lanes(full_court = True, rotate = False,
+                         rotation_dir = 'ccw'):
     """
     Generate the dataframe for the points that comprise the bounding box of the
     free throw lane as specified in Rule 1, Section 6, Articles 1, 2, 3, and 4
@@ -375,13 +396,22 @@ def get_free_throw_lanes():
         ]
     })
     
-    free_throw_lanes = free_throw_lane.append(
-        transform.reflect(free_throw_lane, over_y = True)
-    )
+    if full_court:
+        # Reflect the x coordinates over the y axis
+        free_throw_lane = free_throw_lane.append(
+            transform.reflect(free_throw_lane, over_y = True)
+        )
     
-    return free_throw_lanes
+    # Rotate the coordinates if necessary
+    if rotate:
+        free_throw_lane = transform.rotate(
+            free_throw_lane,
+            rotation_dir
+        )
+    
+    return free_throw_lane
 
-def get_painted_areas():
+def get_painted_areas(full_court = True, rotate = False, rotation_dir = 'ccw'):
     """
     Generate the dataframe for the points that comprise the bounding box of the
     free throw lane as specified in Rule 1, Section 6, Articles 1, 2, 3, and 4
@@ -412,14 +442,23 @@ def get_painted_areas():
         ]
     })
     
-    # Reflect the x coordinates over the y axis
-    painted_areas = painted_area.append(
-        transform.reflect(painted_area, over_y = True)
-    )
+    if full_court:
+        # Reflect the x coordinates over the y axis
+        painted_area = painted_area.append(
+            transform.reflect(painted_area, over_y = True)
+        )
     
-    return painted_areas
+    # Rotate the coordinates if necessary
+    if rotate:
+        painted_area = transform.rotate(
+            painted_area,
+            rotation_dir
+        )
     
-def get_restricted_area_arcs():
+    return painted_area
+    
+def get_restricted_area_arcs(full_court = True, rotate = False,
+                             rotation_dir = 'ccw'):
     """
     Generate the dataframe for the points that comprise the restricted-area
     arcs as specified in Rule 1, Section 8 of the NCAA rule book
@@ -459,15 +498,21 @@ def get_restricted_area_arcs():
             'y': [-4, -4 - (2/12)]
         })
     )
+    
+    if full_court:
+        # Reflect the x coordinates over the y axis
+        restricted_area_arc = restricted_area_arc.append(
+            transform.reflect(restricted_area_arc, over_y = True)
+        )
+    
+    # Rotate the coordinates if necessary
+    if rotate:
+        restricted_area_arc = transform.rotate(rotation_dir = rotation_dir, df = restricted_area_arc)
         
-    # Reflect the x coordinates over the y axis
-    restricted_area_arcs = restricted_area_arc.append(
-        transform.reflect(restricted_area_arc, over_y = True)
-    )
+    return restricted_area_arc
     
-    return restricted_area_arcs
-    
-def get_m_three_pt_lines():
+def get_m_three_pt_lines(full_court = True, rotate = False,
+                         rotation_dir = 'ccw'):
     """
     Generate the dataframe for the points that comprise the three-point line
     as specified in Rule 1, Section 7 of the NCAA rule book. These points are
@@ -554,14 +599,21 @@ def get_m_three_pt_lines():
             ]
         })
     )
-        
-    m_three_pt_lines = m_three_pt_line.append(
-        transform.reflect(m_three_pt_line, over_y = True)
-    )
     
-    return m_three_pt_lines
+    if full_court:
+        # Reflec the x coordinates over the y axis
+        m_three_pt_line = m_three_pt_line.append(
+            transform.reflect(m_three_pt_line, over_y = True)
+        )
+    
+    # Rotate the coordinates if necessary
+    if rotate:
+        m_three_pt_line = transform.rotate(rotation_dir = rotation_dir, df = m_three_pt_line)
+    
+    return m_three_pt_line
 
-def get_w_three_pt_lines():
+def get_w_three_pt_lines(full_court = True, rotate = False,
+                         rotation_dir = 'ccw'):
     """
     Generate the dataframe for the points that comprise the three-point line
     as specified in Rule 1, Section 7 of the NCAA rule book. These points are
@@ -601,15 +653,25 @@ def get_w_three_pt_lines():
             'y':[-20.75 + (2/12), -20.75]
         })
     )
-        
-    # Reflect the x coordinates over the y axis
-    w_three_pt_lines = w_three_pt_line.append(
-        transform.reflect(w_three_pt_line, over_y = True)
-    )
     
-    return w_three_pt_lines
+    if full_court:
+        # Reflect the x coordinates over the y axis
+        w_three_pt_line = w_three_pt_line.append(
+            transform.reflect(w_three_pt_line, over_y = True)
+        )
+    
+    # Rotate the coordinates if necessary
+    if rotate:
+        w_three_pt_line = transform.rotate(
+            w_three_pt_line,
+            rotation_dir
+        )
+    
+    
+    return w_three_pt_line
 
-def get_free_throw_circles():
+def get_free_throw_circles(full_court = True, rotate = False,
+                           rotation_dir = 'ccw'):
     """
     Generate the dataframe for the points that comprise the free-throw circles
     as specified on the court diagram in the NCAA rule book
@@ -644,14 +706,22 @@ def get_free_throw_circles():
         })
     )
     
-    # Reflect x coordinates over y axis
-    free_throw_circles = free_throw_circle.append(
-        transform.reflect(free_throw_circle, over_y = True)
-    )
+    if full_court:
+        # Reflect x coordinates over y axis
+        free_throw_circle = free_throw_circle.append(
+            transform.reflect(free_throw_circle, over_y = True)
+        )
     
-    return free_throw_circles
+    # Rotate the coordinates if necessary
+    if rotate:
+        free_throw_circle = transform.rotate(
+            free_throw_circle,
+            rotation_dir
+        )
+    
+    return free_throw_circle
 
-def get_backboards():
+def get_backboards(full_court = True, rotate = False, rotation_dir = 'ccw'):
     """
     Generate the dataframe for the points that comprise the backboard as
     specified in Rule 1, Section 10, Article 2 of the NCAA rule book
@@ -668,14 +738,22 @@ def get_backboards():
         'y':[-3, -3, 3, 3, -3]
     })
     
-    # Reflect x coordinates over y axis
-    backboards = backboard.append(
-        transform.reflect(backboard, over_y = True)
-    )
+    if full_court:
+        # Reflect x coordinates over y axis
+        backboard = backboard.append(
+            transform.reflect(backboard, over_y = True)
+        )
     
-    return backboards
+    # Rotate the coordinates if necessary
+    if rotate:
+        backboard = transform.rotate(
+            backboard,
+            rotation_dir
+        )
+        
+    return backboard
 
-def get_goals():
+def get_goals(full_court = True, rotate = False, rotation_dir = 'ccw'):
     """
     Generate the dataframe for the points that comprise the goals as specified
     in Rule 1, Sections 14 and 15 of the NCAA rule book
@@ -726,14 +804,22 @@ def get_goals():
         })
     )
         
-    # Reflect x coordinates over y axis
-    goals = goal.append(
-        transform.reflect(goal, over_y = True)
-    )
+    if full_court:
+        # Reflect x coordinates over y axis
+        goal = goal.append(
+            transform.reflect(goal, over_y = True)
+        )
     
-    return goals
+    # Rotate the coordinates if necessary
+    if rotate:
+        goal = transform.rotate(
+            goal,
+            rotation_dir
+        )
+        
+    return goal
 
-def get_nets():
+def get_nets(full_court = True, rotate = False, rotation_dir = 'ccw'):
     """
     Generate the dataframe for the points that comprise the rings as specified
     in Rule 1, Section 14, Article 2 of the NCAA rule book
@@ -750,18 +836,28 @@ def get_nets():
         d = 1.5
     )
     
-    # Reflect x coordinates over y axis
-    nets = net.append(
-        transform.reflect(net, over_y = True)
-    )    
+    if full_court:
+        # Reflect x coordinates over y axis
+        net = net.append(
+            transform.reflect(net, over_y = True)
+        )
     
-    return nets
+    # Rotate the coordinates if necessary
+    if rotate:
+        net = transform.rotate(
+            net,
+            rotation_dir
+        )
     
-def draw_court(home = 'illinois'):
+    return net
+    
+def draw_court(home = 'illinois', full_court = True, rotate = False,
+               rotation_dir = 'ccw'):
     logo_link = ('https://a.espncdn.com/combiner/i?img=/i/teamlogos/'
                  'ncaa/500/356.png')
     
-    im = Image.open(requests.get(logo_link, stream = True).raw)
+    if full_court:
+        im = Image.open(requests.get(logo_link, stream = True).raw)
     
     court_color = '#d2ab6f'
     paint_color = '#e04e39'
@@ -770,21 +866,94 @@ def draw_court(home = 'illinois'):
         home_line_color = '#13294b'
     
     # Get the dataframes required to plot
-    center_circle = get_center_circle()
-    division_line = get_division_line()
-    endlines = get_endlines()
-    sidelines = get_sidelines()
-    coaching_boxes = get_coaching_boxes()
-    bench_areas = get_bench_areas()
-    free_throw_lanes = get_free_throw_lanes()
-    painted_areas = get_painted_areas()
-    restricted_arcs = get_restricted_area_arcs()
-    m_three_pt_lines = get_m_three_pt_lines()
-    w_three_pt_lines = get_w_three_pt_lines()
-    free_throw_circles = get_free_throw_circles()
-    backboards = get_backboards()
-    goals = get_goals()
-    nets = get_nets()
+    features = {
+        'center_circle': get_center_circle(
+            full_court,
+            rotate,
+            rotation_dir
+        ),
+        
+        'division_line': get_division_line(
+            full_court,
+            rotate,
+            rotation_dir
+        ),
+        
+        'endlines_sidelines': get_endlines_sidelines(
+            full_court,
+            rotate,
+            rotation_dir
+        ),
+        
+        'coaching_boxes': get_coaching_boxes(
+            full_court,
+            rotate,
+            rotation_dir
+        ),
+        
+        'bench_areas': get_bench_areas(
+            full_court,
+            rotate,
+            rotation_dir
+        ),
+        
+        'free_throw_lanes': get_free_throw_lanes(
+            full_court,
+            rotate,
+            rotation_dir
+        ),
+        
+        'painted_areas': get_painted_areas(
+            full_court,
+            rotate,
+            rotation_dir
+        ),
+        
+        'restricted_arcs': get_restricted_area_arcs(
+            full_court,
+            rotate,
+            rotation_dir
+        ),
+        
+        'm_three_pt_lines': get_m_three_pt_lines(
+            full_court,
+            rotate,
+            rotation_dir
+        ),
+        
+        'w_three_pt_lines': get_w_three_pt_lines(
+            full_court,
+            rotate,
+            rotation_dir
+        ),
+        
+        'free_throw_circles': get_free_throw_circles(
+            full_court,
+            rotate,
+            rotation_dir
+        ),
+        
+        'backboards': get_backboards(
+            full_court,
+            rotate,
+            rotation_dir
+        ),
+        
+        'goals': get_goals(
+            full_court,
+            rotate,
+            rotation_dir
+        ),
+        
+        'nets': get_nets(
+            full_court,
+            rotate,
+            rotation_dir
+        )
+    }
+    
+    if rotate and full_court:
+        im = im.rotate(90)
     
     # Create the figure
     fig, ax = plt.subplots()
@@ -803,56 +972,117 @@ def draw_court(home = 'illinois'):
     ax.set_facecolor(court_color)
     
     # Add team logo
-    ax.imshow(im, extent = [-12, 12, -12, 12], zorder = 1)
+    if full_court:
+        ax.imshow(im, extent = [-12, 12, -12, 12], zorder = 1)
     
     # Per the NCAA rule book, courts should be drawn from the center outwards
-    ax.fill(center_circle['x'], center_circle['y'], home_line_color)
+    ax.fill(
+        features['center_circle']['x'],
+        features['center_circle']['y'],
+        home_line_color
+    )
     
     # Add the division line
-    ax.fill(division_line['x'], division_line['y'], home_line_color)
+    ax.fill(
+        features['division_line']['x'],
+        features['division_line']['y'],
+        home_line_color
+    )
     
-    # Add the endlines
-    ax.fill(endlines['x'], endlines['y'], home_line_color)
-    
-    # Add the sidelines
-    ax.fill(sidelines['x'], sidelines['y'], home_line_color)
-    
+    # Add the endlines and sidelines
+    ax.fill(
+        features['endlines_sidelines']['x'],
+        features['endlines_sidelines']['y'],
+        home_line_color
+    )
+        
     # Add the coaching boxes
-    ax.fill(coaching_boxes['x'], coaching_boxes['y'], home_line_color)
+    ax.fill(
+        features['coaching_boxes']['x'],
+        features['coaching_boxes']['y'],
+        home_line_color
+    )
     
     # Add bench areas
-    ax.fill(bench_areas['x'], bench_areas['y'], home_line_color)
+    ax.fill(
+        features['bench_areas']['x'],
+        features['bench_areas']['y'],
+        home_line_color
+    )
     
     # Add the free throw lanes
-    ax.fill(free_throw_lanes['x'], free_throw_lanes['y'], lane_line_color)
+    ax.fill(
+        features['free_throw_lanes']['x'],
+        features['free_throw_lanes']['y'],
+        lane_line_color
+    )
     
     # Paint the painted areas
-    ax.fill(painted_areas['x'], painted_areas['y'], paint_color)
+    ax.fill(
+        features['painted_areas']['x'],
+        features['painted_areas']['y'],
+        paint_color
+    )
     
     # Add restricted-area arcs
-    ax.fill(restricted_arcs['x'], restricted_arcs['y'], home_line_color)
+    ax.fill(
+        features['restricted_arcs']['x'],
+        features['restricted_arcs']['y'],
+        home_line_color
+    )
     
     # Add the men's three-point lines
-    ax.fill(m_three_pt_lines['x'], m_three_pt_lines['y'], home_line_color)
+    ax.fill(
+        features['m_three_pt_lines']['x'],
+        features['m_three_pt_lines']['y'],
+        home_line_color
+    )
     
     # Add the women's three-point lines
-    ax.fill(w_three_pt_lines['x'], w_three_pt_lines['y'], lane_line_color)
+    ax.fill(
+        features['w_three_pt_lines']['x'],
+        features['w_three_pt_lines']['y'],
+        lane_line_color
+    )
     
     # Add the free-throw circles
-    ax.fill(free_throw_circles['x'], free_throw_circles['y'], lane_line_color)
+    ax.fill(
+        features['free_throw_circles']['x'],
+        features['free_throw_circles']['y'],
+        lane_line_color
+    )
     
     # Add the backboards
-    ax.fill(backboards['x'], backboards['y'], '#000000')
+    ax.fill(
+        features['backboards']['x'],
+        features['backboards']['y'],
+        '#000000'
+    )
     
     # Add the goals
-    ax.fill(goals['x'], goals['y'], '#000000')
+    ax.fill(
+        features['goals']['x'],
+        features['goals']['y'],
+        '#000000'
+    )
     
     # Add the nets
-    ax.fill(nets['x'], nets['y'], '#ffffff')
+    ax.fill(
+        features['nets']['x'],
+        features['nets']['y'],
+        '#ffffff'
+    )
     
     plt.show()
     
     return None
 
 if __name__ == '__main__':
-    draw_court()
+    draw_court(full_court = True, rotate = False, rotation_dir = 'ccw')
+    draw_court(full_court = True, rotate = False, rotation_dir = 'cw')
+    draw_court(full_court = True, rotate = True, rotation_dir = 'ccw')
+    draw_court(full_court = True, rotate = True, rotation_dir = 'cw')
+    draw_court(full_court = False, rotate = False, rotation_dir = 'ccw')
+    draw_court(full_court = False, rotate = False, rotation_dir = 'cw')
+    draw_court(full_court = False, rotate = True, rotation_dir = 'ccw')
+    draw_court(full_court = False, rotate = True, rotation_dir = 'cw')
